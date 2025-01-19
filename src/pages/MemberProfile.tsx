@@ -166,7 +166,7 @@ export function MemberProfile() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Sidebar />
-        <div className="pl-64">
+        <div>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="animate-pulse">
               <div className="h-4 bg-gray-200 rounded w-24 mb-8"></div>
@@ -186,7 +186,7 @@ export function MemberProfile() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Sidebar />
-        <div className="pl-64">
+        <div>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <p className="text-red-600">Error: {error || 'Member not found'}</p>
@@ -201,7 +201,7 @@ export function MemberProfile() {
     <div className="min-h-screen bg-gray-50">
       <Sidebar />
       
-      <div className="pl-64">
+      <div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-8">
             <Link to="/members" className="flex items-center text-sm text-gray-600 hover:text-gray-900">

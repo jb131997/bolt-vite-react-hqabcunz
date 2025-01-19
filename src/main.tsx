@@ -1,21 +1,19 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import App from './App.tsx'
-import { Dashboard } from './pages/Dashboard.tsx'
-import { Members } from './pages/Members.tsx'
-import { MemberProfile } from './pages/MemberProfile.tsx'
-import './index.css'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { BrowserRouter as Router } from "react-router-dom";
+import App from "./App.tsx";
+import { AuthProvider } from "./context/AuthContext.tsx";
+import "./index.css";
+import { StripeProvider } from "./context/StripeContext.tsx";
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <Router>
-      <Routes>
-        <Route path="/" element={<App />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/members" element={<Members />} />
-        <Route path="/members/:id" element={<MemberProfile />} />
-      </Routes>
-    </Router>
-  </StrictMode>,
-)
+    <AuthProvider>
+      <StripeProvider>
+        <Router>
+          <App />
+        </Router>
+      </StripeProvider>
+    </AuthProvider>
+  </StrictMode>
+);

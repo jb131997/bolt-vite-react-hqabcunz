@@ -1,6 +1,14 @@
-import Stripe from 'https://esm.sh/stripe@12.0.0?target=deno'
+import Stripe from 'npm:stripe';
 
-export const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
-  apiVersion: '2023-10-16',
-  httpClient: Stripe.createFetchHttpClient(),
-})
+export const getStripeClient = () => {
+  const stripeKey = Deno.env.get("STRIPE_SECRET_KEY")!;
+
+  if (!stripeKey) {
+    throw new Error("Missing Stripe secret key environment variable");
+  }
+
+  return new Stripe(stripeKey, {
+    apiVersion: "2023-10-16",
+    httpClient: Stripe.createFetchHttpClient(),
+  });
+};

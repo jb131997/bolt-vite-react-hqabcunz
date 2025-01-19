@@ -4,7 +4,7 @@ import { Sidebar } from '../components/Sidebar'
 import { MetricCard } from '../components/MetricCard'
 import { AddStatDialog } from '../components/AddStatDialog'
 import { DateRangePicker } from '../components/DateRangePicker'
-import { supabase } from '../lib/supabase'
+import { getStripeAccountSession, supabase } from '../lib/supabase'
 import { Metric } from '../types'
 
 const DEFAULT_TODAY_METRICS: Metric[] = [
@@ -34,6 +34,21 @@ export function Dashboard() {
   const [removedMetrics, setRemovedMetrics] = useState<Metric[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+   (async () => {
+    const { data: { session }, error: authError } = await supabase.auth.getSession()
+    if (authError) throw authError
+    if (!session) {
+      window.location.href = '/'
+      return
+    }
+
+    const {data,error,} = await getStripeAccountSession()
+    console.log(data,error)
+   })(); 
+  }, [])
+
 
   useEffect(() => {
     const initializeData = async () => {
@@ -228,7 +243,7 @@ export function Dashboard() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Sidebar />
-        <div className="pl-64">
+        <div>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="animate-pulse space-y-6">
               <div className="h-8 bg-gray-200 rounded w-48" />
@@ -251,7 +266,7 @@ export function Dashboard() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Sidebar />
-        <div className="pl-64">
+        <div>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <p className="text-red-600">{error}</p>
@@ -266,7 +281,7 @@ export function Dashboard() {
     <div className="min-h-screen bg-gray-50">
       <Sidebar />
       
-      <div className="pl-64">
+      <div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-between mb-8">
             <div className="relative">
