@@ -9,9 +9,8 @@ const OnboardStripe = () => {
 
   // if details are already submitted, navigate back to /manage-stripe
   useEffect(() => {
-    if(stripeAccount?.details_submitted) navigate("/manage-stripe")
-  }, [navigate, stripeAccount])
-
+    if (stripeAccount?.details_submitted) navigate("/manage-stripe");
+  }, [navigate, stripeAccount]);
 
   const handleExit = () => {
     console.log("The account has exited onboarding");
@@ -30,7 +29,13 @@ const OnboardStripe = () => {
           payments.
         </p>
 
-        <ConnectAccountOnboarding onExit={handleExit} />
+        <ConnectAccountOnboarding
+          onExit={handleExit}
+          collectionOptions={{
+            fields: "eventually_due",
+            // futureRequirements: "include",
+          }}
+        />
       </div>
     </div>
   );

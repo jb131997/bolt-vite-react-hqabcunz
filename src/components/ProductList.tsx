@@ -1,28 +1,39 @@
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { Product } from "../types";
+import { useAuth } from "../context/AuthContext";
 
 interface ProductListProps {
   setProducts: Dispatch<SetStateAction<Product[]>>;
   products: Product[];
 }
 
-export default function ProductList({products, setProducts}: ProductListProps) {
+export default function ProductList({
+  products,
+  setProducts,
+}: ProductListProps) {
+  console.log(products);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
   const [error, setError] = useState("");
-  const [filter, setFilter] = useState<
-    "all" | "membership" | "product" | "service"
-  >("all");
-  const [loadingProductId, setLoadingProductId] = useState<string | null>(null); // Track loading product ID for status toggle
+  const [filter, setFilter] = useState<"all" | "one-time" | "recurring">("all");
+  const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
 
   const fetchProducts = async () => {
     try {
       setLoading(true);
       setError("");
 
+      if (!user?.id) {
+        setError("User not logged in");
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from("products")
         .select("*")
+        .eq("gym_id", user.id)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -40,14 +51,13 @@ export default function ProductList({products, setProducts}: ProductListProps) {
     currentStatus: boolean
   ) => {
     try {
-      setLoadingProductId(productId); // Set loading state for specific product
+      setLoadingProductId(productId);
       const { error } = await supabase
         .from("products")
         .update({ active: !currentStatus })
         .eq("id", productId);
 
       if (error) throw error;
-      // Directly toggle status without refetching all products
       setProducts((prev) =>
         prev.map((product) =>
           product.id === productId
@@ -57,9 +67,8 @@ export default function ProductList({products, setProducts}: ProductListProps) {
       );
     } catch (err) {
       console.error("Error toggling product status:", err);
-      // Handle error state if needed
     } finally {
-      setLoadingProductId(null); // Reset loading state for product
+      setLoadingProductId(null);
     }
   };
 
@@ -79,8 +88,6 @@ export default function ProductList({products, setProducts}: ProductListProps) {
     return <div className="bg-red-50 text-red-700 p-4 rounded-md">{error}</div>;
   }
 
-  console.log(products);
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -92,9 +99,8 @@ export default function ProductList({products, setProducts}: ProductListProps) {
             className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="all">All Types</option>
-            <option value="product">Products</option>
-            <option value="membership">Memberships</option>
-            <option value="service">Services</option>
+            <option value="one-time">One-Time</option>
+            <option value="recurring">Recurring</option>
           </select>
         </div>
       </div>
@@ -121,7 +127,6 @@ export default function ProductList({products, setProducts}: ProductListProps) {
                 </span>
               </div>
 
-              {/* Adjusting description text handling */}
               <p
                 className={`text-sm text-gray-600 mb-2 ${
                   !product.description ? "italic" : ""
@@ -134,18 +139,33 @@ export default function ProductList({products, setProducts}: ProductListProps) {
 
               <div className="flex justify-between items-center mb-3">
                 <span className="text-lg font-semibold text-gray-900">
-                  ${product.price.toFixed(2)}
+                  {product.currency} {product.price.toFixed(2)}
                 </span>
                 <span className="text-sm text-gray-500 capitalize">
                   {product.type}
                 </span>
               </div>
 
-              {/* Button for toggling product status */}
+              {product.type === "recurring" && (
+                <div className="text-sm text-gray-500 mb-3">
+                  Every {product.interval_count} {product.interval_unit}
+                </div>
+              )}
+
+              <button
+              disabled={!product.stripe_payment_link || !product.active}
+                onClick={() =>
+                  window.open(product.stripe_payment_link, "_blank")
+                }
+                className="w-full px-3 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+              >
+                Buy
+              </button>
+
               <button
                 onClick={() => toggleProductStatus(product.id, product.active)}
-                className="w-full px-3 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                disabled={loadingProductId === product.id} // Disable button when toggling status
+                className="w-full mt-2 px-3 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                disabled={loadingProductId === product.id}
               >
                 {loadingProductId === product.id ? (
                   <span className="text-sm text-gray-500">Loading...</span>
